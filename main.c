@@ -1,165 +1,44 @@
 #include "shell.h"
 
 /**
- * add_node - Adds a node to the start of the list.
- * @head: Address of the pointer to the head node.
- * @str: str field of the node.
- * @num: Node index used by history.
+ * main - entry point
+ * @ac: arg count
+ * @av: arg vector
  *
- * Return: Size of the list.
+ * Return: 0 on success, 1 on error
  */
-
-list_t *add_node(list_t **head, const char *str, int num)
+int main(int ac, char **av)
 {
-	list_t *new_head;
+	info_t info[] = { INFO_INIT };
+	int fd = 2;
 
-	if (!head)
-		return (NULL);
-	new_head = malloc(sizeof(list_t));
-	if (!new_head)
-		return (NULL);
-	_memset((void *)new_head, 0, sizeof(list_t));
-	new_head->num = num;
-	if (str)
+	asm ("mov %1, %0\n\t"
+		"add $3, %0"
+		: "=r" (fd)
+		: "r" (fd));
+
+	if (ac == 2)
 	{
-		new_head->str = _strdup(str);
-		if (!new_head->str)
+		fd = open(av[1], O_RDONLY);
+		if (fd == -1)
 		{
-			free(new_head);
-			return (NULL);
+			if (errno == EACCES)
+				exit(126);
+			if (errno == ENOENT)
+			{
+				_eputs(av[0]);
+				_eputs(": 0: Can't open ");
+				_eputs(av[1]);
+				_eputchar('\n');
+				_eputchar(BUF_FLUSH);
+				exit(127);
+			}
+			return (EXIT_FAILURE);
 		}
+		info->readfd = fd;
 	}
-	new_head->next = *head;
-	*head = new_head;
-	return (new_head);
+	populate_env_list(info);
+	read_history(info);
+	hsh(info, av);
+	return (EXIT_SUCCESS);
 }
-
-/**
- * add_node_end - Adds a node to the end of the list.
- * @head: Address of the pointer to the head node.
- * @str: str field of the node.
- * @num: Node index used by history.
- *
- * Return: Size of the list.
- */
-
-list_t *add_node_end(list_t **head, const char *str, int num)
-{
-	list_t *new_node, *node;
-
-	if (!head)
-		return (NULL);
-
-	node = *head;
-	new_node = malloc(sizeof(list_t));
-	if (!new_node)
-		return (NULL);
-	_memset((void *)new_node, 0, sizeof(list_t));
-	new_node->num = num;
-	if (str)
-	{
-		new_node->str = _strdup(str);
-		if (!new_node->str)
-		{
-			free(new_node);
-			return (NULL);
-		}
-	}
-	if (node)
-	{
-		while (node->next)
-			node = node->next;
-		node->next = new_node;
-	}
-	else
-		*head = new_node;
-	return (new_node);
-}
-
-/**
- * print_list_str - Prints only the str element of a list_t linked list.
- * @h: Pointer to the first node.
- *
- * Return: Size of the list.
- */
-
-size_t print_list_str(const list_t *a)
-{
-	size_t k = 0;
-
-	while (a)
-	{
-		_puts(a->str ? a->str : "(nil)");
-		_puts("\n");
-		a = a->next;
-		k++;
-	}
-	return (k);
-}
-
-/**
- * delete_node_at_index - Deletes a node at the given index.
- * @head: Address of the pointer to the first node.
- * @index: Index of the node to delete.
- *
- * Return: 1 on success, 0 on failure.
- */
-
-int delete_node_at_index(list_t **head, unsigned int index)
-{
-	list_t *node, *prev_node;
-	unsigned int i = 0;
-
-	if (!head || !*head)
-		return (0);
-
-	if (!index)
-	{
-		node = *head;
-		*head = (*head)->next;
-		free(node->str);
-		free(node);
-		return (1);
-	}
-	node = *head;
-	while (node)
-	{
-		if (k == index)
-		{
-			prev_node->next = node->next;
-			free(node->str);
-			free(node);
-			return (1);
-		}
-		k++;
-		prev_node = node;
-		node = node->next;
-	}
-	return (0);
-}
-
-/**
- * free_list - Frees all nodes of a list.
- * @head_ptr: Address of the pointer to the head node.
- *
- * Return: Void.
- */
-
-void free_list(list_t **head_ptr)
-{
-	list_t *node, *next_node, *head;
-
-	if (!head_ptr || !*head_ptr)
-		return;
-	head = *head_ptr;
-	node = head;
-	while (node)
-	{
-		next_node = node->next;
-		free(node->str);
-		free(node);
-		node = next_node;
-	}
-	*head_ptr = NULL;
-}
-
