@@ -2,7 +2,7 @@
 
 /**
  * interactive - returns true if shell is interactive mode
- * @info: struct address
+ * @info:Pointer to the info_t struct.
  *
  * Return: 1 if interactive mode, 0 otherwise
  */
