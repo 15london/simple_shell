@@ -1,11 +1,14 @@
 #include "shell.h"
 
 /**
- * _myexit - exits the shell
- * @info: Structure containing potential arguments. Used to maintain
- *          constant function prototype.
- *  Return: exits with a given exit status
- *         (0) if info.argv[0] != "exit"
+ * _myexit - Exit the shell or set exit status.
+ * @info: Pointer to the info_t struct holding argument information.
+ *
+ * This function handles the "exit" command. If an argument is provided,
+ * it attempts to convert it to an integer and sets it as the exit status.
+ *
+ * Return: Returns -2 to indicate an exit status change if successful,
+ *         or 1 in case of an illegal number argument, or -2 if no argument.
  */
 int _myexit(info_t *info)
 {
